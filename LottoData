@@ -1,0 +1,31 @@
+library(tidyverse)
+library(repr)
+library(tidymodels)
+
+
+
+result_rawdata <- read_csv("data/LottoMaxResults.csv")
+
+result_data <- select(result_rawdata, "Regular Numbers":Bonus)
+
+
+
+numbers_data <- pivot_longer(result_data, cols = "Regular Numbers":"Bonus", names_to = "Position of number", values_to = "numbers") %>%
+                group_by(numbers) %>%
+                summarise(number = numbers, count = n()) %>%
+                group_by(number, count) %>%
+                summarise(number = numbers, count = n()) %>%
+                unique() %>%
+                mutate(probability = count/774)
+
+
+top7_data <- numbers_data %>%
+             arrange(desc(probability))
+                
+
+
+
+result_data_plot <- ggplot(numbers_data, aes(x = factor(number), y = probability)) +
+                    geom_bar(stat = "identity") +
+                    theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) 
+
